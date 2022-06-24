@@ -1,0 +1,28 @@
+﻿<Window x:Class="TouhouButtonWPF.TouhouButton"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:TouhouButtonWPF"
+        mc:Ignorable="d"
+        Title="TouhouButton" Height="240" Width="160" ResizeMode="NoResize" Visibility="Visible" AllowsTransparency="True" WindowStyle="None" Background="{x:Null}" Closing="Window_Closing" Loaded="Window_Loaded" IsTabStop="False" Cursor="Hand" PreviewMouseLeftButtonDown="Window_PreviewMouseLeftButtonDown" PreviewMouseLeftButtonUp="Window_PreviewMouseLeftButtonUp" MouseEnter="Window_MouseEnter" MouseLeave="Window_MouseLeave" KeyDown="Window_KeyDown" SourceInitialized="Window_SourceInitialized">
+	<Grid>
+		<Rectangle x:Name="background" HorizontalAlignment="Center" Height="240" VerticalAlignment="Center" Width="160" RadiusX="16" RadiusY="16" StrokeThickness="4" ClipToBounds="True">
+			<Rectangle.Stroke>
+				<LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+					<GradientStop Color="#BF000000" Offset="1"/>
+					<GradientStop Color="#3F000000" Offset="0"/>
+				</LinearGradientBrush>
+			</Rectangle.Stroke>
+			<Rectangle.Fill>
+				<LinearGradientBrush EndPoint="0.5,0" StartPoint="0.5,1">
+					<GradientStop Color="#FF22000D" Offset="0"/>
+					<GradientStop Color="#FF903737" Offset="1"/>
+				</LinearGradientBrush>
+			</Rectangle.Fill>
+		</Rectangle>
+		<Image x:Name="title" Width="140" Margin="0,24,0,0" VerticalAlignment="Top" Stretch="Uniform" StretchDirection="Both" HorizontalAlignment="Stretch" Height="38" Source="/touhou_6_title.png"/>
+		<Image HorizontalAlignment="Center" Height="21" VerticalAlignment="Top" Width="142" Source="/Touhou Button.png" Stretch="Uniform" Margin="0,24,0,0" StretchDirection="Both" RenderOptions.BitmapScalingMode="NearestNeighbor" Visibility="Hidden"/>
+		<Image x:Name="touhouButton" Margin="10,0,10,24" Stretch="Uniform" VerticalAlignment="Bottom" Height="158" Width="128" Source="/touhou_6_button.png"/>
+	</Grid>
+</Window>

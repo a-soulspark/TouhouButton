@@ -1,0 +1,10 @@
+{
+  "iconPath": "./resources/Icon_th06.png",
+  "titlePath": "./resources/touhou_6_title.png",
+  "gameCfgPath": "C:\\Users\\preido\\Desktop\\Games\\Touhou 06 The Embodiment of Scarlet Devil\\th06e.cfg",
+  "gamePath": "C:\\Users\\preido\\Desktop\\Games\\Touhou 06 The Embodiment of Scarlet Devil\\vpatch.exe",
+  "playText": "Play Touhou 6: The Embodiment of Scarlet Devil",
+  "touhouProcess": "",
+  "soundPath": "./resources/start.wav",
+  "backgroundColors": "#FF22000D, 0, #FF903737, 1"
+}

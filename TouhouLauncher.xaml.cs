@@ -66,8 +66,8 @@ namespace TouhouButtonWPF
 				}
 			}
 
-			Timer timer = new(5000);
-			timer.Elapsed += (sender, e) => SocialBarLoading.IsEnabled = false;
+			Timer timer = new(5000) { AutoReset = false };
+			timer.Elapsed += (sender, e) => Dispatcher.Invoke(() => SocialBarLoading.IsEnabled = false);
 			timer.Start();
 
 			OnGameOpened = onGameOpened;
@@ -85,9 +85,13 @@ namespace TouhouButtonWPF
 			foreach (var userFile in userFiles)
 			{
 				string[] userData = File.ReadAllLines(userFile);
-				Users.Add(userFile, new User(userFile, int.Parse(userData[0])));
+				var userName = userFile[(userFile.LastIndexOf('/')+1)..];
 
-				UserProfile userProfile = new(userFile, ShowLogInScreen);
+				Debug.WriteLine(int.Parse(userData[0]));
+				User user = new(userName, int.Parse(userData[0]));
+				Users.Add(userName, user);
+
+				UserProfile userProfile = new(user, ShowLogInScreen);
 				SocialStack.Children.Add(userProfile);
 			}
 
@@ -175,7 +179,7 @@ namespace TouhouButtonWPF
 
 		private void ShowLogInScreen(string userName = "")
 		{
-			LogInPopup logInPopup = new(OnLogIn, userName);
+			LogInPopup logInPopup = new(OnLogIn, false, userName);
 			logInPopup.ShowDialog();
 		}
 
@@ -184,6 +188,21 @@ namespace TouhouButtonWPF
 			currentUser = user;
 			CurrentUserName.Content = user.Name;
 			CurrentUserName.Background = new SolidColorBrush(Colors.White);
+
+			foreach (UserProfile userProfile in SocialStack.Children)
+			{
+				if (userProfile != null && user == userProfile.User)
+				{
+					userProfile.LogIn();
+				}
+			}
+		}
+
+		private void OnRegister(User user)
+		{
+			SocialStack.Children.Add(new UserProfile(user, ShowLogInScreen));
+			Users.Add(user.Name, user);
+			OnLogIn(user);
 		}
 
 		private void SocialBarLoading_MouseEnter(object sender, MouseEventArgs e) => SocialBarLoading.IsEnabled = false;
@@ -191,14 +210,22 @@ namespace TouhouButtonWPF
 		private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
 		{
 			var path = $"{Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)}/TouhouButton/database/";
+			Debug.WriteLine($"Ready to write the data to {path}\n\n");
 
 			foreach (var userName in Users.Keys)
 			{
 				string[] data = new[] { Users[userName].PasswordHash.ToString() };
+				
+
 				File.WriteAllLines(path + userName, data);
+				Debug.WriteLine($"{userName} : {data.Length}\n");
 			}
 		}
 
-		private void RegisterButton_Click(object sender, RoutedEventArgs e) => ShowLogInScreen();
+		private void RegisterButton_Click(object sender, RoutedEventArgs e)
+		{
+			LogInPopup logInPopup = new(OnRegister, true, "");
+			logInPopup.ShowDialog();
+		}
 	}
 }

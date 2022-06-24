@@ -397,6 +397,13 @@
 									<BeginStoryboard>
 										<Storyboard>
 											<DoubleAnimation Storyboard.TargetProperty="Opacity" To="1" Duration="0:0:0.2"/>
+											<ObjectAnimationUsingKeyFrames BeginTime="0:0:0.2" Storyboard.TargetProperty="Visibility">
+												<DiscreteObjectKeyFrame KeyTime="0">
+													<DiscreteObjectKeyFrame.Value>
+														<Visibility>Visible</Visibility>
+													</DiscreteObjectKeyFrame.Value>
+												</DiscreteObjectKeyFrame>
+											</ObjectAnimationUsingKeyFrames>
 										</Storyboard>
 									</BeginStoryboard>
 								</Trigger.ExitActions>
@@ -408,7 +415,7 @@
 		</Grid>
 		<Rectangle x:Name="TitleBar" Fill="#FF3B1551" PreviewMouseLeftButtonDown="TitleBar_PreviewMouseLeftButtonDown" Stroke="Black" Margin="-2,-2,-2,0" StrokeThickness="2"/>
 		<Label Content="The Touhou Button Launcher" Foreground="White" FontFamily="UD Digi Kyokasho NK-R" Background="{x:Null}" IsHitTestVisible="False" Margin="25,0,0,0"/>
-		<Button x:Name="Close" Content="✕" HorizontalAlignment="Right" FontFamily="Source Code Pro" BorderBrush="{x:Null}" Background="#FF9B2700" Foreground="White" Width="25" Click="Close_Click" BorderThickness="0,0,0,0" Margin="0,-1,0,1"/>
+		<Button x:Name="Close" Content="✕" HorizontalAlignment="Right" FontFamily="Source Code Pro" BorderBrush="{x:Null}" Background="#FF9B2700" Foreground="White" Width="23" Click="Close_Click" BorderThickness="0,0,0,0" Margin="0,0,0,2"/>
 		<Image HorizontalAlignment="Left" Height="25" VerticalAlignment="Stretch" Width="25" Source="/icon.png" Margin="0,0,0,2" IsHitTestVisible="False"/>
 	</Grid>
 

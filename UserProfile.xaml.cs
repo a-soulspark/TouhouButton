@@ -25,19 +25,20 @@ namespace TouhouButtonWPF
 	{
 		private const string NOTEPAD_PLACEHOLDER = "This is your personal notepad. Feel free to write whatever you want in it...";
 
-		public string UserName { get; }
+		public User User { get; }
 		public Action<string> OnShowLogIn { get; }
+		public bool LoggedIn { get; set; } = false;
 
-		//public UserProfile(string userName) : this(userName, name => { }) { }
+		// public UserProfile(string userName) : this(userName, name => { }) { }
 		// ^^^ not really very needed
 
-		public UserProfile(string userName, Action<string> onShowLogIn)
+		public UserProfile(User user, Action<string> onShowLogIn)
 		{
 			InitializeComponent();
-			Name.Content = userName;
+			User = user;
+			Name.Content = user.Name;
 			Notepad.Document.Blocks.Clear();
 			Notepad.Document.Blocks.Add(new Paragraph(new Run(NOTEPAD_PLACEHOLDER)));
-			UserName = userName;
 			OnShowLogIn = onShowLogIn;
 		}
 
@@ -45,12 +46,8 @@ namespace TouhouButtonWPF
 		{
 			RichTextBox textBox = (RichTextBox)sender;
 			var text = new TextRange(textBox.Document.ContentStart, textBox.Document.ContentEnd).Text.TrimEnd('\n');
-			Debug.WriteLine($"{text}\n\n\n");
-			if (text.Contains(NOTEPAD_PLACEHOLDER))
-			{
-				SystemSounds.Beep.Play();
-				Notepad.Document.Blocks.Clear();
-			}
+			
+			if (text.Contains(NOTEPAD_PLACEHOLDER)) Notepad.Document.Blocks.Clear();
 		}
 
 		private void RichTextBox_LostFocus(object sender, RoutedEventArgs e)
@@ -64,6 +61,26 @@ namespace TouhouButtonWPF
 			}
 		}
 
-		private void Label_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e) => OnShowLogIn(UserName);
+		internal void LogIn()
+		{
+			LoggedIn = true;
+
+			LogInPrompt.IsEnabled = false;
+			LogInPrompt.Visibility = Visibility.Hidden;
+			Notepad.IsReadOnly = false;
+			Notepad.IsHitTestVisible = Notepad.Focusable = true;
+		}
+
+		private void LogInPrompt_MouseUp(object sender, MouseButtonEventArgs e) => OnShowLogIn(User.Name);
+
+		private void UserControl_MouseEnter(object sender, MouseEventArgs e)
+		{
+			if (!LoggedIn) LogInPrompt.IsEnabled = true;
+		}
+
+		private void UserControl_MouseLeave(object sender, MouseEventArgs e)
+		{
+			if (!LoggedIn) LogInPrompt.IsEnabled = false;
+		}
 	}
 }

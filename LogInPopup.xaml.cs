@@ -32,19 +32,25 @@ namespace TouhouButtonWPF
 			OnCancelled = () => { };
 			UserNameField.Text = defaultUserName;
 			RegisterMode = registerMode;
+
+			if (defaultUserName != "") PassField.Focus();
+			LogInButton.Content = WindowTitle.Content = RegisterMode ? "Register" : "Log In";
 		}
 
 		/*
-				public static class CustomCommands
-				{
-					public static readonly RoutedUICommand Exit = new RoutedUICommand("Submit Password", "SubmitPassword", typeof(CustomCommands)*//*,
-						new InputGestureCollection() { new KeyGesture(Key.Enter) }*//*);
+		public static class CustomCommands
+		{
+			public static readonly RoutedUICommand Exit = new RoutedUICommand("Submit Password", "SubmitPassword", typeof(CustomCommands)*//*,
+				new InputGestureCollection() { new KeyGesture(Key.Enter) }*//*);
 
-					//Define more commands here, just like the one above
-				}*/
+			//Define more commands here, just like the one above
+		}*/
 
 		private void SubmitPassword()
 		{
+			// This code is just a bunch of Guard clauses. It's kinda hideous... but it works really well.
+			// (it's even said to be "good practice" to do this 🤔)
+
 			if (string.IsNullOrWhiteSpace(UserNameField.Text))
 			{
 				MessageBox.Show("The user name field cannot be empty.");
@@ -64,13 +70,18 @@ namespace TouhouButtonWPF
 				MessageBox.Show($"The user \"{UserNameField.Text}\" does not exist.");
 				return;
 			}
-
+				
 			if (!RegisterMode && PassField.Password.GetHashCode() != user.PasswordHash)
 			{
 				MessageBox.Show($"The user name or password do not match.");
 				return;
 			}
 
+			// this condition could be simpler
+			// ( || user == null) ----> unnecessary
+			// but otherwise VS keeps naggin me about this
+			if (RegisterMode || user == null) user = new User(UserNameField.Text, PassField.Password.GetHashCode());
+			
 			Close();
 			OnLogIn(user);
 			MessageBox.Show($"Welcome, {UserNameField.Text}!");
@@ -109,5 +120,9 @@ namespace TouhouButtonWPF
 		{
 			if (!_loggedIn) OnCancelled();
 		}
+
+		private void TitleBar_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e) => DragMove();
+
+		private void Close_Click(object sender, RoutedEventArgs e) => Close();
 	}
 }

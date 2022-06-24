@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:TouhouButtonWPF"
         mc:Ignorable="d"
-        Title="LogInPopup" Height="200" Width="400" ResizeMode="NoResize" WindowStyle="ToolWindow" FontFamily="UD Digi Kyokasho NK-R" BorderBrush="Black" BorderThickness="2,2,2,2" Closing="Window_Closing">
+        Title="LogInPopup" Height="200" Width="400" ResizeMode="NoResize" WindowStyle="None" FontFamily="UD Digi Kyokasho NK-R" BorderBrush="Black" BorderThickness="2,2,2,2" Closing="Window_Closing" FocusManager.FocusedElement="{Binding ElementName=UserNameField}">
 	<Window.Resources>
 		<SolidColorBrush x:Key="TextBox.Static.Border" Color="#FFABAdB3"/>
 		<SolidColorBrush x:Key="TextBox.MouseOver.Border" Color="#FF7EB4EA"/>
@@ -59,42 +59,51 @@
 			<GradientStop Color="#FF7C4395" Offset="1"/>
 		</LinearGradientBrush>
 	</Window.Background>
-	<Grid HorizontalAlignment="Stretch" Margin="20,20,20,20">
-		<Grid.ColumnDefinitions>
-			<ColumnDefinition Width="Auto"/>
-			<ColumnDefinition/>
-		</Grid.ColumnDefinitions>
-		<Grid HorizontalAlignment="Center" Width="120">
-			<Grid.RowDefinitions>
-				<RowDefinition Height="Auto"/>
-				<RowDefinition/>
-				<RowDefinition Height="Auto"/>
-			</Grid.RowDefinitions>
+	<Grid>
+		<Grid.RowDefinitions>
+			<RowDefinition Height="Auto"/>
+			<RowDefinition/>
+		</Grid.RowDefinitions>
+		<Grid Margin="20,20,20,20" Grid.Row="1">
+			<Grid.ColumnDefinitions>
+				<ColumnDefinition Width="Auto"/>
+				<ColumnDefinition/>
+			</Grid.ColumnDefinitions>
+			<Grid HorizontalAlignment="Center" Width="120">
+				<Grid.RowDefinitions>
+					<RowDefinition Height="Auto"/>
+					<RowDefinition/>
+					<RowDefinition Height="Auto"/>
+				</Grid.RowDefinitions>
 
-			<StackPanel HorizontalAlignment="Center">
-				<Label Content="username (*)" Foreground="White" VerticalContentAlignment="Bottom" Padding="5,0,0,0" FontFamily="UD Digi Kyokasho NK-R" Background="{x:Null}"/>
+				<StackPanel HorizontalAlignment="Center">
+					<Label Content="username (*)" Foreground="White" VerticalContentAlignment="Bottom" Padding="5,0,0,0" FontFamily="UD Digi Kyokasho NK-R" Background="{x:Null}"/>
 
-				<TextBox local:FocusAdvancement.AdvancesByEnterKey="True" x:Name="UserNameField" TextWrapping="Wrap" Width="120" BorderBrush="Black" BorderThickness="2,2,2,2" TabIndex="0">
-					<TextBox.Background>
-						<LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
-							<GradientStop Color="#FFB1A469"/>
-							<GradientStop Color="#FFFFF0B6" Offset="0.997"/>
-						</LinearGradientBrush>
-					</TextBox.Background>
-				</TextBox>
-				<Label Content="password (*)" Foreground="White" VerticalContentAlignment="Bottom" Padding="5,0,0,0" FontFamily="UD Digi Kyokasho NK-R" Background="{x:Null}" Margin="0,10,0,0"/>
-				<PasswordBox local:FocusAdvancement.AdvancesByEnterKey="True" x:Name="PassField" Style="{DynamicResource PasswordBoxStyle1}" Width="120" BorderBrush="Black" BorderThickness="2,2,2,2" TabIndex="1" KeyDown="PassField_KeyDown">
-					<PasswordBox.Background>
-						<LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
-							<GradientStop Color="#FFB1A469"/>
-							<GradientStop Color="#FFFFF0B6" Offset="1"/>
-						</LinearGradientBrush>
-					</PasswordBox.Background>
-				</PasswordBox>
+					<TextBox local:FocusAdvancement.AdvancesByEnterKey="True" x:Name="UserNameField" TextWrapping="Wrap" Width="120" BorderBrush="Black" BorderThickness="2,2,2,2" TabIndex="0">
+						<TextBox.Background>
+							<LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+								<GradientStop Color="#FFB1A469"/>
+								<GradientStop Color="#FFFFF0B6" Offset="0.997"/>
+							</LinearGradientBrush>
+						</TextBox.Background>
+					</TextBox>
+					<Label Content="password (*)" Foreground="White" VerticalContentAlignment="Bottom" Padding="5,0,0,0" FontFamily="UD Digi Kyokasho NK-R" Background="{x:Null}" Margin="0,10,0,0"/>
+					<PasswordBox local:FocusAdvancement.AdvancesByEnterKey="True" x:Name="PassField" Style="{DynamicResource PasswordBoxStyle1}" Width="120" BorderBrush="Black" BorderThickness="2,2,2,2" TabIndex="1" KeyDown="PassField_KeyDown">
+						<PasswordBox.Background>
+							<LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+								<GradientStop Color="#FFB1A469"/>
+								<GradientStop Color="#FFFFF0B6" Offset="1"/>
+							</LinearGradientBrush>
+						</PasswordBox.Background>
+					</PasswordBox>
 
-			</StackPanel>
-			<Button x:Name="LogInButton" Content="Log In" Background="#FFFFF0B6" BorderBrush="Black" BorderThickness="2,2,2,2" Padding="1,5,0.8,5" Grid.Row="2" TabIndex="2" Click="LogInButton_Click"/>
+				</StackPanel>
+				<Button x:Name="LogInButton" Content="Log In" Background="#FFFFF0B6" BorderBrush="Black" BorderThickness="2,2,2,2" Padding="1,5,0.8,5" Grid.Row="2" TabIndex="2" Click="LogInButton_Click"/>
+			</Grid>
+			<Label Content="It's recommended to write down&#xA;your password somewhere safe.&#xA;(there is NO password recover)&#xA;&#xA;Also, avoid using the same&#xA;password here as you use&#xA;elsewhere, for your own safety." Foreground="#FFFFE9E9" VerticalContentAlignment="Center" Padding="5,0,0,0" FontFamily="UD Digi Kyokasho NK-R" Grid.Column="1" Background="{x:Null}" Margin="20,0,0,0"/>
 		</Grid>
-		<Label Content="It's recommended to write down&#xA;your password somewhere safe.&#xA;(there is NO password recover)&#xA;&#xA;Also, avoid using the same&#xA;password here as you use&#xA;elsewhere, for your own safety." Foreground="#FFFFE9E9" VerticalContentAlignment="Center" Padding="5,0,0,0" FontFamily="UD Digi Kyokasho NK-R" Grid.Column="1" Background="{x:Null}" Margin="20,0,0,0"/>
+		<Rectangle x:Name="TitleBar" Fill="#FF3B1551" PreviewMouseLeftButtonDown="TitleBar_PreviewMouseLeftButtonDown" Stroke="Black" Margin="-2,-2,-2,2" StrokeThickness="2"/>
+		<Label x:Name="WindowTitle" Content="Log In" Foreground="White" FontFamily="UD Digi Kyokasho NK-R" Background="{x:Null}" IsHitTestVisible="False" Margin="25,0,0,2"/>
+		<Button x:Name="Close" Content="✕" HorizontalAlignment="Right" FontFamily="Source Code Pro" BorderBrush="{x:Null}" Background="#FF9B2700" Foreground="White" Width="23" Click="Close_Click" BorderThickness="0,0,0,0" Margin="0,0,0,4"/>
 	</Grid>
 </Window>

@@ -5,7 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:TouhouButtonWPF"
              mc:Ignorable="d" 
-             d:DesignHeight="200" d:DesignWidth="200" Background="#FF300228" Height="150" FontFamily="UD Digi Kyokasho NK-R">
+             d:DesignHeight="200" d:DesignWidth="200" Background="#FF300228" Height="150" FontFamily="UD Digi Kyokasho NK-R" Margin="0,10,0,0" MouseEnter="UserControl_MouseEnter" MouseLeave="UserControl_MouseLeave">
 	<UserControl.Resources>
 		<Style TargetType="RichTextBox">
 			<Setter Property="Template">
@@ -34,11 +34,10 @@
 					<ColumnDefinition Width="20"/>
 					<ColumnDefinition/>
 				</Grid.ColumnDefinitions>
-				<Label x:Name="LogInTimer" Content="(Logged in for 1 minute)" Grid.Row="1" BorderThickness="1,1,0,0" FontFamily="UD Digi Kyokasho NK-R" Padding="5,2,0,0" VerticalContentAlignment="Center" HorizontalContentAlignment="Left" Background="{x:Null}" Grid.Column="1" Visibility="Hidden"/>
-				<Label x:Name="Name" Content="Label" VerticalAlignment="Top" Background="#FFD168AC" BorderBrush="Black" BorderThickness="1,1,1,0" Padding="5,2,5,2" Grid.Column="1"/>
-				<Label Content="👤" Background="#FFD168AC" BorderBrush="Black" BorderThickness="1,1,0,0" FontFamily="UD Digi Kyokasho NK-R" Padding="0,2,0,0" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
+				<Label x:Name="Name" Content="Label" VerticalAlignment="Top" Background="#FFD168AC" BorderBrush="Black" BorderThickness="1,1,1,0" Padding="5,2,5,2" Grid.Column="1" IsHitTestVisible="False"/>
+				<Label Content="👤" Background="#FFD168AC" BorderBrush="Black" BorderThickness="1,1,0,0" FontFamily="UD Digi Kyokasho NK-R" Padding="0,2,0,0" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" IsHitTestVisible="False"/>
 			</Grid>
-			<RichTextBox x:Name="Notepad" Grid.Row="2" Background="{x:Null}" Foreground="White" BorderBrush="Black" FontFamily="UD Digi Kyokasho NK-R" Padding="0,4,0,0" CaretBrush="White" SelectionBrush="#FF9600D7" GotFocus="RichTextBox_GotFocus" LostFocus="RichTextBox_LostFocus" IsReadOnly="True" Focusable="False">
+			<RichTextBox x:Name="Notepad" Grid.Row="2" Background="{x:Null}" Foreground="White" BorderBrush="Black" FontFamily="UD Digi Kyokasho NK-R" Padding="0,4,0,0" CaretBrush="White" SelectionBrush="#FF9600D7" GotFocus="RichTextBox_GotFocus" LostFocus="RichTextBox_LostFocus" IsReadOnly="True" Focusable="False" IsHitTestVisible="False">
 				<FlowDocument>
 					<Paragraph>
 						<Run Text="RichTextBox"/>
@@ -46,6 +45,43 @@
 				</FlowDocument>
 			</RichTextBox>
 		</Grid>
-		<Label Background="#BF000000" Content="Log in" Foreground="White" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Cursor="Hand" PreviewMouseLeftButtonDown="Label_PreviewMouseLeftButtonDown"/>
+		<Label x:Name="LogInPrompt" Background="#BF000000" Content="Click to Log in" Foreground="White" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Cursor="Hand" MouseUp="LogInPrompt_MouseUp" IsEnabled="False">
+			<Label.Style>
+				<Style TargetType="Label">
+					<Style.Triggers>
+						<Trigger Property="IsEnabled" Value="False">
+							<Trigger.EnterActions>
+								<BeginStoryboard>
+									<Storyboard>
+										<DoubleAnimation Storyboard.TargetProperty="Opacity" To="0" Duration="0:0:0.2"/>
+										<ObjectAnimationUsingKeyFrames BeginTime="0:0:0.2" Storyboard.TargetProperty="Visibility">
+											<DiscreteObjectKeyFrame KeyTime="0">
+												<DiscreteObjectKeyFrame.Value>
+													<Visibility>Hidden</Visibility>
+												</DiscreteObjectKeyFrame.Value>
+											</DiscreteObjectKeyFrame>
+										</ObjectAnimationUsingKeyFrames>
+									</Storyboard>
+								</BeginStoryboard>
+							</Trigger.EnterActions>
+							<Trigger.ExitActions>
+								<BeginStoryboard>
+									<Storyboard>
+										<DoubleAnimation Storyboard.TargetProperty="Opacity" To="1" Duration="0:0:0.2"/>
+										<ObjectAnimationUsingKeyFrames BeginTime="0:0:0.0" Storyboard.TargetProperty="Visibility">
+											<DiscreteObjectKeyFrame KeyTime="0">
+												<DiscreteObjectKeyFrame.Value>
+													<Visibility>Visible</Visibility>
+												</DiscreteObjectKeyFrame.Value>
+											</DiscreteObjectKeyFrame>
+										</ObjectAnimationUsingKeyFrames>
+									</Storyboard>
+								</BeginStoryboard>
+							</Trigger.ExitActions>
+						</Trigger>
+					</Style.Triggers>
+				</Style>
+			</Label.Style>
+		</Label>
 	</Grid>
 </UserControl>

@@ -11,6 +11,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
+using System.Security.Cryptography;
 
 namespace TouhouButtonWPF
 {
@@ -35,6 +36,27 @@ namespace TouhouButtonWPF
 
 			if (defaultUserName != "") PassField.Focus();
 			LogInButton.Content = WindowTitle.Content = RegisterMode ? "Register" : "Log In";
+		}
+
+		private static string GetHash(HashAlgorithm hashAlgorithm, string input)
+		{
+
+			// Convert the input string to a byte array and compute the hash.
+			byte[] data = hashAlgorithm.ComputeHash(Encoding.UTF8.GetBytes(input));
+
+			// Create a new Stringbuilder to collect the bytes
+			// and create a string.
+			var sBuilder = new StringBuilder();
+
+			// Loop through each byte of the hashed data
+			// and format each one as a hexadecimal string.
+			for (int i = 0; i < data.Length; i++)
+			{
+				sBuilder.Append(data[i].ToString("x2"));
+			}
+
+			// Return the hexadecimal string.
+			return sBuilder.ToString();
 		}
 
 		/*
@@ -70,17 +92,22 @@ namespace TouhouButtonWPF
 				MessageBox.Show($"The user \"{UserNameField.Text}\" does not exist.");
 				return;
 			}
-				
-			if (!RegisterMode && PassField.Password.GetHashCode() != user.PasswordHash)
+			using (SHA256 sha256Hash = SHA256.Create())
 			{
-				MessageBox.Show($"The user name or password do not match.");
-				return;
+				if (!RegisterMode && GetHash(sha256Hash, PassField.Password) != user.PasswordHash)
+				{
+					MessageBox.Show($"The user name or password do not match.");
+					return;
+				}
 			}
 
 			// this condition could be simpler
 			// ( || user == null) ----> unnecessary
 			// but otherwise VS keeps naggin me about this
-			if (RegisterMode || user == null) user = new User(UserNameField.Text, PassField.Password.GetHashCode());
+			using (SHA256 sha256Hash = SHA256.Create())
+			{
+				if (RegisterMode || user == null) user = new User(UserNameField.Text, GetHash(sha256Hash, PassField.Password));
+			}
 			
 			Close();
 			OnLogIn(user);

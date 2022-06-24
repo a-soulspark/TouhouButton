@@ -29,7 +29,7 @@ namespace TouhouButtonWPF
 		private string gameCfgPath = "";
 		private string gameProcessName = "東方紅魔郷";
 
-		public static Dictionary<string, User> Users { get; set; } = new() { { "soulspark", new("soulspark", "soul2398".GetHashCode()) } };
+		public static Dictionary<string, User> Users { get; set; } = new() {};
 		public User? currentUser;
 
 		public Action<Process> OnGameOpened { get; }
@@ -87,8 +87,8 @@ namespace TouhouButtonWPF
 				string[] userData = File.ReadAllLines(userFile);
 				var userName = userFile[(userFile.LastIndexOf('/')+1)..];
 
-				Debug.WriteLine(int.Parse(userData[0]));
-				User user = new(userName, int.Parse(userData[0]));
+				Debug.WriteLine(userData[0]);
+				User user = new(userName, userData[0]);
 				Users.Add(userName, user);
 
 				UserProfile userProfile = new(user, ShowLogInScreen);

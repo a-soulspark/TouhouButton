@@ -23,7 +23,6 @@ namespace TouhouButtonWPF
 		public Action<User> OnLogIn { get; }
 		public bool RegisterMode { get; set; } = false;
 
-		private bool _loggedIn = false;
 		private readonly TouhouLauncher launcher;
 
 		public LogInForm(TouhouLauncher launcher, Action<User> onLogIn, bool registerMode, string defaultUserName = "")

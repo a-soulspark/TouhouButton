@@ -5,7 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:TouhouButtonWPF"
              mc:Ignorable="d" 
-             d:DesignHeight="200" d:DesignWidth="200" Height="150" FontFamily="UD Digi Kyokasho NK-R" Margin="0,0,0,5" MouseEnter="UserControl_MouseEnter" MouseLeave="UserControl_MouseLeave" BorderBrush="Black" BorderThickness="2,2,2,2">
+             d:DesignHeight="200" d:DesignWidth="200" Height="150" FontFamily="UD Digi Kyokasho NK-R" Margin="0,0,0,5" MouseEnter="UserControl_MouseEnter" MouseLeave="UserControl_MouseLeave" BorderBrush="Black" BorderThickness="2,2,2,2" Background="Black">
 	<UserControl.Resources>
 		<Style TargetType="RichTextBox">
 			<Setter Property="Template">
@@ -27,6 +27,7 @@
 		<Grid>
 			<Grid.RowDefinitions>
 				<RowDefinition Height="Auto"/>
+				<RowDefinition Height="Auto"/>
 				<RowDefinition Height="*"/>
 			</Grid.RowDefinitions>
 			<Grid>
@@ -37,7 +38,15 @@
 				<Label x:Name="Name" Content="Label" VerticalAlignment="Top" Background="#FFD168AC" BorderBrush="Black" BorderThickness="2,0,0,2" Padding="5,2,5,2" Grid.Column="1" IsHitTestVisible="False"/>
 				<Label Content="👤" Background="#FFD168AC" BorderBrush="Black" BorderThickness="0,0,0,2" FontFamily="UD Digi Kyokasho NK-R" Padding="0,2,0,0" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" IsHitTestVisible="False"/>
 			</Grid>
-			<RichTextBox x:Name="Notepad" Grid.Row="2" Foreground="White" FontFamily="UD Digi Kyokasho NK-R" Padding="0,4,0,0" CaretBrush="White" SelectionBrush="#FF9600D7" GotFocus="RichTextBox_GotFocus" LostFocus="RichTextBox_LostFocus" IsReadOnly="True" Focusable="False" IsHitTestVisible="False" BorderBrush="{x:Null}">
+			<Grid Grid.Row="1">
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition Width="20"/>
+					<ColumnDefinition/>
+				</Grid.ColumnDefinitions>
+				<Label x:Name="HighScoreLabel" Content="" VerticalAlignment="Top" Background="#FFD9C754" BorderBrush="Black" BorderThickness="2,0,0,2" Padding="5,2,5,2" Grid.Column="1" IsHitTestVisible="False"/>
+				<Label Content="🏆" Background="#FFD9C754" BorderBrush="Black" BorderThickness="0,0,0,2" FontFamily="UD Digi Kyokasho NK-R" Padding="0,2,0,0" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" IsHitTestVisible="False"/>
+			</Grid>
+			<RichTextBox x:Name="Notepad" Grid.Row="2" Foreground="White" FontFamily="UD Digi Kyokasho NK-R" Padding="0,4,0,0" CaretBrush="White" SelectionBrush="#FF9600D7" GotFocus="RichTextBox_GotFocus" LostFocus="RichTextBox_LostFocus" IsReadOnly="True" Focusable="False" IsHitTestVisible="False" BorderBrush="{x:Null}" BorderThickness="0,0,0,0">
 				<RichTextBox.Background>
 					<LinearGradientBrush EndPoint="0.5,0" StartPoint="0.5,1">
 						<GradientStop Color="#FF611952"/>
@@ -51,7 +60,7 @@
 				</FlowDocument>
 			</RichTextBox>
 		</Grid>
-		<Label x:Name="LogInPrompt" Background="#BF000000" Content="Click to Log in" Foreground="White" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Cursor="Hand" IsEnabled="False" MouseDown="LogInPrompt_MouseDown">
+		<Label x:Name="LogInPrompt" Background="#BF000000" Content="Click to Log in" Foreground="White" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Cursor="Hand" MouseDown="LogInPrompt_MouseDown" IsEnabled="False">
 			<Label.Style>
 				<Style TargetType="Label">
 					<Style.Triggers>

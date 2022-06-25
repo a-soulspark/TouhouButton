@@ -86,24 +86,20 @@ namespace TouhouButtonWPF
 		// Updates the config.json file with the new window coordinates
 		private void SaveJsonConfig()
 		{
-			FileStream stream = File.Open(Directory.GetCurrentDirectory() + "/config.json", FileMode.Open);
 			try
 			{
+				FileStream stream = File.Open(Directory.GetCurrentDirectory() + "/config.json", FileMode.Open, FileAccess.ReadWrite);
 				JsonNode? json = JsonNode.Parse(stream);
 				if (json != null)
 				{
-					stream.Position = 0;
-					Utf8JsonWriter writer = new(stream, new JsonWriterOptions() { Indented = true });
-					var jsonObject = json.AsObject();
-
-					jsonObject.Add("window", new JsonObject
+					json["window"] = new JsonObject
 					{
 						new("top", JsonValue.Create(Top)),
 						new("left", JsonValue.Create(Left))
-					});
+					};
 
-					jsonObject.WriteTo(writer);
-					writer.Flush();
+					stream.Dispose();
+					File.WriteAllText(Directory.GetCurrentDirectory() + "/config.json", json.ToJsonString(new JsonSerializerOptions() { WriteIndented = true }));
 				}
 			}
 			catch (Exception ex)
@@ -163,11 +159,8 @@ namespace TouhouButtonWPF
 			 * (I already added a TODO related to this one, about the Launcher hiding itself when the game opens instead of closing)
 			 */
 			Opacity = 0;
-			new TouhouLauncher(process =>
-			{
-				process.WaitForExit();
-				Opacity = 1;
-			}, () => Opacity = 1).Show();
+
+			new TouhouLauncher(process => Opacity = 1, () => Opacity = 1).Show();
 		}
 
 		// Shifts the Touhou Button's image by 3*factor px.

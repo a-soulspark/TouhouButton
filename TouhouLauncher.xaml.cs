@@ -4,8 +4,10 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Media;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Json.Nodes;
+using System.Threading;
 using System.Timers;
 using System.Windows;
 using System.Windows.Controls;
@@ -13,6 +15,8 @@ using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using System.Windows.Threading;
+using C0reExternalBase_v2;
 
 namespace TouhouButtonWPF
 {
@@ -26,26 +30,32 @@ namespace TouhouButtonWPF
 		private string gameCfgPath = "";
 		private string gameProcessName = "";
 
+		// TODO: remoe currentUser and replace with currentUserProfile (makes more sense + more consistent)
 		public User? currentUser;
+		public UserProfile? currentUserProfile;
 
-		public Action<Process> OnGameOpened { get; }
+		public Action<Process> OnGameClosed { get; }
 		public Action OnLauncherDismissed { get; }
 
 		public TouhouLauncher(Action<Process> onGameOpened, Action onLauncherDismissed)
 		{
 			InitializeComponent();
 
+			AccountButtonsGrid.Visibility = Visibility.Collapsed;
 			// Load the Social Bar automatically after 5 seconds.
 			// Yes, the SocialBarLoading text is a lie. The social bar can easily load instantly.
 			// The 5-second delay is a way to overwhelm new users a bit less when they first join.
-			Timer timer = new(5000) { AutoReset = false };
-			timer.Elapsed += (sender, e) => Dispatcher.Invoke(LoadSocialBar);
-			timer.Start();
+			DispatcherTimer _timer = new(TimeSpan.FromSeconds(5), DispatcherPriority.Normal, (sender, e) =>
+			{
+				LoadSocialBar();
+				(sender as DispatcherTimer)?.Stop();
+			}, Application.Current.Dispatcher);
+			_timer.Start();
 
-			OnGameOpened = onGameOpened;
+			OnGameClosed = onGameOpened;
 			OnLauncherDismissed = onLauncherDismissed;
 		}
-		
+
 		// SourceInitialized is the right moment to read configuration files (or so it seems)
 		private void Window_SourceInitialized(object sender, EventArgs e) => ReadJsonConfig();
 
@@ -62,7 +72,7 @@ namespace TouhouButtonWPF
 					Debug.WriteLine($"Launcher configuration loaded: {json}");
 
 					TitleBarIcon.Source = Icon = new BitmapImage(new Uri(AppDomain.CurrentDomain.BaseDirectory + "./resources/launcher_icon.png", UriKind.Absolute));
-					
+
 					JsonUtils.TryGetValue<string>(json, "gameProcessName", value => gameProcessName = value);
 					JsonUtils.TryGetValue<string>(json, "gamePath", value => gamePath = value);
 					JsonUtils.TryGetValue<string>(json, "gameCfgPath", value => gameCfgPath = value);
@@ -83,6 +93,7 @@ namespace TouhouButtonWPF
 			// Only load the Social Bar once
 			if (SocialBarLoading.IsEnabled)
 			{
+				AccountButtonsGrid.Visibility = Visibility.Visible;
 				SocialBarLoading.IsEnabled = false;
 				ReadDatabase();
 			}
@@ -107,11 +118,11 @@ namespace TouhouButtonWPF
 			string[] userData = File.ReadAllLines(userFile.FullName);
 			var userName = userFile.Name;
 
-			User user = new(userName, userData[0], Convert.FromBase64String(userData[1]), long.Parse(userData[2]));
+			User user = new(userName, userData[0], Convert.FromBase64String(userData[1]), long.Parse(userData[2]), int.Parse(userData[3]));
 
 			UserProfile userProfile = new(this, user, ShowLogInForm);
 			userProfile.Notepad.Document.Blocks.Clear();
-			foreach (var line in userData[3..^1]) userProfile.Notepad.Document.Blocks.Add(new Paragraph(new Run(line)));
+			foreach (var line in userData[4..^1]) userProfile.Notepad.Document.Blocks.Add(new Paragraph(new Run(line)));
 
 			SocialStack.Children.Add(userProfile);
 		}
@@ -138,7 +149,7 @@ namespace TouhouButtonWPF
 					soundPlayer.Play();
 				}
 
-				Close();
+				Hide();
 
 				if (currentUser == null) TimedMessageBox.Show("You are playing as a guest user.\n" +
 					"Consider registering a username next time: \n" +
@@ -146,7 +157,7 @@ namespace TouhouButtonWPF
 					"• have your own public notepad for writing your thoughts\n" +
 					"+ avoid this message!\n\n" +
 					"(if you are already a user, don't forget to log in)",
-					title: "Playing as Guest", timer: 3);
+					title: "Playing as Guest", timer: 3 * 0);
 
 				TimedMessageBox.Show("↓↑→← Arrow Keys: Move\n" +
 					"Z: Shoot\n" +
@@ -165,22 +176,60 @@ namespace TouhouButtonWPF
 					file.WriteByte((byte)(fullscreen ? 0 : 1));
 				}
 
-				// Executes vpatch.exe first (auxiliary application which helps Touhou run properly, at 60FPS)
-				Process vpatchProcess = Process.Start(gamePath);
-				if (vpatchProcess.ProcessName == "vpatch") vpatchProcess.WaitForExit();
-
-				// Once vpatch is closed, automatically search for the Touhou process and notify that to the TouhouButton
-				/* TODO: Rewrite this so that Touhou Launcher only hides itself here instead of closing,
-				 * waits until the Touhou process has exited,
-				 * to finally then notify the TouhouButton.
-				 * This will allow the TouhouLauncher to keep updating the user with its new hi-score,
-				 * without having to pass all the information about the users to the TouhouButton 👌*/
-				Process[] touhouProcesses = Process.GetProcessesByName(gameProcessName);
-				if (touhouProcesses.Length >= 1) OnGameOpened(touhouProcesses[0]);
+				PlayVpatch();
 			}
 			catch (Exception ex)
 			{
 				MessageBox.Show($"Exception caught while playing: {ex}");
+			}
+		}
+
+		private void PlayVpatch()
+		{
+			// Executes vpatch.exe first (auxiliary application which helps Touhou run properly, at 60FPS)
+			Process vpatchProcess = Process.Start(gamePath);
+			if (vpatchProcess.ProcessName == "vpatch") vpatchProcess.WaitForExit();
+
+			// Once vpatch is closed, automatically search for the Touhou process
+			Process[] touhouProcesses = Process.GetProcessesByName(gameProcessName);
+			if (touhouProcesses.Length >= 1)
+			{
+				// Advanced hackeries to get the user score
+				var touhouProcess = touhouProcesses[0];
+				ProcessModule touhouModule = touhouProcess.Modules[0];
+				IntPtr processHandle = MemoryUtils.OpenProcess(touhouProcess);
+
+				IntPtr baseAddress = touhouModule.BaseAddress;
+				IntPtr scoreAddress = IntPtr.Add(baseAddress, 0x29BCA4);
+
+				// No high score if the user doesn't exist
+				int originalHighScore = currentUser == null ? 0 : currentUser.HighScore;
+
+				DispatcherTimer timer = new(TimeSpan.FromSeconds(0.1), DispatcherPriority.Normal, (sender, e) =>
+				{
+					// Wait until the process has exited before closing this window too
+					if (touhouProcess.HasExited)
+					{
+						(sender as DispatcherTimer)?.Stop();
+						Close();
+
+						if (currentUser != null && currentUser.HighScore > originalHighScore)
+						{
+							TimedMessageBox.Show($"Congratulations! You beat your old high score ({originalHighScore}) by +{currentUser.HighScore - originalHighScore} points!\n" +
+								$"🏆New high score: {currentUser.HighScore}", "New high score!");
+						}
+					
+						OnGameClosed(touhouProcess);
+					}
+					else if(currentUser != null)
+					{
+						// Until the process has exited, keep watching the score memory address
+						// Makes sure that the high score is the biggest between the stored high and the process' score
+						int score = MemoryUtils.ReadMemory<int>(processHandle, (int)scoreAddress);
+						currentUser.HighScore = Math.Max(currentUser.HighScore, score);
+					}
+				}, Application.Current.Dispatcher);
+				timer.Start();
 			}
 		}
 
@@ -237,19 +286,20 @@ namespace TouhouButtonWPF
 			CurrentUserName.Background = new SolidColorBrush(Colors.White);
 			AccountButtonsGrid.Visibility = Visibility.Collapsed;
 
-			UserProfile? newProfile = null;
+			UserProfile? loggedProfile = null;
 			foreach (UserProfile userProfile in SocialStack.Children)
 			{
 				if (user == userProfile.User)
 				{
 					userProfile.LogIn();
-					newProfile = userProfile;
+					loggedProfile = userProfile;
 				}
 				userProfile.OnLoggedIn();
 			}
 
-			SocialStack.Children.Remove(newProfile);
-			SocialStack.Children.Insert(0, newProfile);
+			currentUserProfile = loggedProfile;
+			SocialStack.Children.Remove(loggedProfile);
+			SocialStack.Children.Insert(0, loggedProfile);
 		}
 
 		// Called when a new user has just been registered, after the LogInForm is closed
@@ -272,11 +322,12 @@ namespace TouhouButtonWPF
 
 		private static void WriteUser(string path, UserProfile userProfile)
 		{
-			string[] data = new string[4];
+			string[] data = new string[5];
 			data[0] = userProfile.User.PasswordHash;
 			data[1] = Convert.ToBase64String(userProfile.User.PasswordSalt);
 			data[2] = userProfile.User.LastLoginTime.ToString();
-			data[3] = new TextRange(userProfile.Notepad.Document.ContentStart, userProfile.Notepad.Document.ContentEnd).Text
+			data[3] = userProfile.User.HighScore.ToString();
+			data[4] = new TextRange(userProfile.Notepad.Document.ContentStart, userProfile.Notepad.Document.ContentEnd).Text
 				.Replace(UserProfile.NOTEPAD_PLACEHOLDER, UserProfile.NOTEPAD_PLACEHOLDER_OTHERS);
 
 			File.WriteAllLines(path + userProfile.User.Name, data);

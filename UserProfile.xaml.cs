@@ -31,6 +31,7 @@ namespace TouhouButtonWPF
 			Name.Content = user.Name;
 			Notepad.Document.Blocks.Clear();
 			Notepad.Document.Blocks.Add(new Paragraph(new Run(NOTEPAD_PLACEHOLDER)));
+			UpdateHighScoreLabel();
 			OnShowLogIn = onShowLogIn;
 		
 			this.launcher = launcher;
@@ -78,6 +79,8 @@ namespace TouhouButtonWPF
 			LogInPrompt.IsEnabled = false;
 			LogInPrompt.Visibility = Visibility.Hidden;
 		}
+
+		public void UpdateHighScoreLabel() => HighScoreLabel.Content = $"{User.HighScore} points";
 
 		private void LogInPrompt_MouseDown(object sender, MouseButtonEventArgs e) => OnShowLogIn(User.Name);
 

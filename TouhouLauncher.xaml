@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:TouhouButtonWPF"
         mc:Ignorable="d"
-        Title="Touhou Launcher" Height="450" Width="900" ResizeMode="CanMinimize" WindowStyle="None" Foreground="White" BorderThickness="2,2,2,2" AllowsTransparency="True" WindowStartupLocation="CenterScreen" FontFamily="UD Digi Kyokasho NK-R" Closing="Window_Closing">
+        Title="Touhou Launcher" Height="500" Width="1000" ResizeMode="CanMinimize" WindowStyle="None" Foreground="White" AllowsTransparency="True" WindowStartupLocation="CenterScreen" FontFamily="UD Digi Kyokasho NK-R" Closing="Window_Closing" Background="{x:Null}" SourceInitialized="Window_SourceInitialized">
 	<Window.Resources>
 		<SolidColorBrush x:Key="Expander.Static.Circle.Stroke" Color="#FF333333"/>
 		<SolidColorBrush x:Key="Expander.Static.Circle.Fill" Color="#FFFFFFFF"/>
@@ -34,15 +34,15 @@
 			<Setter Property="Template">
 				<Setter.Value>
 					<ControlTemplate TargetType="{x:Type ToggleButton}">
-						<Border Padding="{TemplateBinding Padding}">
+						<Border Background="#FFFFF7D9" BorderBrush="Black" BorderThickness="0,0,0,2">
 							<Grid Background="Transparent" SnapsToDevicePixels="False" Style="{DynamicResource GridStyle1}">
 								<Grid.ColumnDefinitions>
 									<ColumnDefinition Width="19"/>
 									<ColumnDefinition Width="*"/>
 								</Grid.ColumnDefinitions>
-								<Ellipse x:Name="circle" Fill="{StaticResource Expander.Static.Circle.Fill}" HorizontalAlignment="Center" Height="19" Stroke="{StaticResource Expander.Static.Circle.Stroke}" VerticalAlignment="Center" Width="19"/>
-								<Path x:Name="arrow" Data="M 1,1.5 L 4.5,5 L 8,1.5" HorizontalAlignment="Center" Stroke="{StaticResource Expander.Static.Arrow.Stroke}" SnapsToDevicePixels="false" StrokeThickness="2" VerticalAlignment="Center"/>
-								<ContentPresenter Grid.Column="1" HorizontalAlignment="Left" Margin="4,0,0,0" RecognizesAccessKey="True" SnapsToDevicePixels="True" VerticalAlignment="Center"/>
+								<Rectangle x:Name="circle" Fill="{StaticResource Expander.Static.Circle.Fill}" HorizontalAlignment="Center" Height="19" Stroke="{StaticResource Expander.Static.Circle.Stroke}" VerticalAlignment="Center" Width="19" Margin="-4,-1,-1,-1" StrokeThickness="2"/>
+								<Path x:Name="arrow" Data="M 1,1.5 L 4.5,5 L 8,1.5" HorizontalAlignment="Center" Stroke="{StaticResource Expander.Static.Arrow.Stroke}" SnapsToDevicePixels="false" StrokeThickness="2" VerticalAlignment="Center" Margin="-3,0,0,0"/>
+								<ContentPresenter HorizontalAlignment="Left" Margin="4,0,0,0" RecognizesAccessKey="True" SnapsToDevicePixels="True" VerticalAlignment="Center" Grid.Column="1"/>
 							</Grid>
 						</Border>
 						<ControlTemplate.Triggers>
@@ -224,9 +224,9 @@
 			</Setter>
 		</Style>
 		<ControlTemplate x:Key="ExpanderTemplate1" TargetType="{x:Type Expander}">
-			<Border CornerRadius="3" SnapsToDevicePixels="true" Background="#FFFFF0B7" BorderBrush="Black" BorderThickness="2,2,2,2">
+			<Border SnapsToDevicePixels="true" Background="#FFFFF0B7" BorderBrush="Black" BorderThickness="2,2,2,2">
 				<DockPanel>
-					<ToggleButton x:Name="HeaderSite" ContentTemplate="{TemplateBinding HeaderTemplate}" Content="{TemplateBinding Header}" ContentTemplateSelector="{TemplateBinding HeaderTemplateSelector}" DockPanel.Dock="Top" FontStretch="{TemplateBinding FontStretch}" Foreground="{TemplateBinding Foreground}" FocusVisualStyle="{StaticResource ExpanderHeaderFocusVisual}" FontStyle="{TemplateBinding FontStyle}" FontFamily="{TemplateBinding FontFamily}" FontWeight="{TemplateBinding FontWeight}" FontSize="{TemplateBinding FontSize}" HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}" IsChecked="{Binding IsExpanded, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}" Margin="1" MinWidth="0" MinHeight="0" Padding="{TemplateBinding Padding}" Style="{StaticResource ExpanderDownHeaderStyle}" VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"/>
+					<ToggleButton x:Name="HeaderSite" ContentTemplate="{TemplateBinding HeaderTemplate}" Content="{TemplateBinding Header}" ContentTemplateSelector="{TemplateBinding HeaderTemplateSelector}" DockPanel.Dock="Top" FontStretch="{TemplateBinding FontStretch}" Foreground="{TemplateBinding Foreground}" FocusVisualStyle="{StaticResource ExpanderHeaderFocusVisual}" FontStyle="{TemplateBinding FontStyle}" FontFamily="{TemplateBinding FontFamily}" FontWeight="{TemplateBinding FontWeight}" FontSize="{TemplateBinding FontSize}" HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}" IsChecked="{Binding IsExpanded, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}" MinWidth="0" MinHeight="0" Padding="{TemplateBinding Padding}" Style="{StaticResource ExpanderDownHeaderStyle}" VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" BorderBrush="Black" BorderThickness="1,1,1,2" Margin="0,0,0,-2"/>
 					<ContentPresenter x:Name="ExpandSite" DockPanel.Dock="Bottom" Focusable="false" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" Visibility="Collapsed"/>
 				</DockPanel>
 			</Border>
@@ -276,27 +276,26 @@
 			</Setter>
 		</Style>
 		<Style x:Key="GridStyle1" TargetType="{x:Type Grid}">
-			<Setter Property="Background" Value="#FFF1E9CD"/>
+			<Setter Property="Background" Value="{x:Null}"/>
 		</Style>
 	</Window.Resources>
-	<Window.BorderBrush>
-		<LinearGradientBrush EndPoint="0.5,0" StartPoint="0.5,1">
-			<GradientStop Color="Black"/>
-			<GradientStop Color="#BF000000" Offset="1"/>
-		</LinearGradientBrush>
-	</Window.BorderBrush>
-	<Window.Background>
-		<LinearGradientBrush EndPoint="0.5,0" StartPoint="0.5,1">
-			<GradientStop Color="#FF391259"/>
-			<GradientStop Color="#FF5B0475" Offset="1"/>
-		</LinearGradientBrush>
-	</Window.Background>
-	<Grid>
+	<Window.Effect>
+		<DropShadowEffect BlurRadius="20" Opacity="0.5"/>
+	</Window.Effect>
+
+	<Grid Margin="20,20,20,20">
 		<Grid.RowDefinitions>
 			<RowDefinition Height="25"/>
 			<RowDefinition/>
 		</Grid.RowDefinitions>
+
 		<Grid Grid.Row="1">
+			<Grid.Background>
+				<LinearGradientBrush EndPoint="0.5,0" StartPoint="0.5,1">
+					<GradientStop Color="#FF391259"/>
+					<GradientStop Color="#FF5B0475" Offset="1"/>
+				</LinearGradientBrush>
+			</Grid.Background>
 			<Grid.ColumnDefinitions>
 				<ColumnDefinition/>
 				<ColumnDefinition Width="2*"/>
@@ -320,7 +319,7 @@
 						<Style/>
 					</Expander.Style>
 					<Grid Style="{DynamicResource GridStyle1}">
-						<Label Style="{DynamicResource LabelStyle1}" Content="Touhou Project is a bullet-hell videogame series created by solo Japanese developer ZUN.&#xA;Popular due to their great music and many characters, all 18 Touhou games are composed of&#xA;6 Stages of increasing difficulty, each with its own characters, bosses and challenges.&#xA;Be ready to play an extraordinarily difficult bullet-dodging game!&#xA;&#xA;(NOTE: Touhou is NOT an anime... but it is a Japanese game with anime-looking drawings '.＿.)&#xA;There are multiple fan-made anime series if you're into that, but the games are just games.)"/>
+						<Label Style="{DynamicResource LabelStyle1}" Content="Touhou Project is a bullet-hell videogame series created by solo Japanese developer ZUN.&#xA;Popular due to their great music and many characters, all 18 Touhou games are composed of&#xA;6 Stages of increasing difficulty, each with its own characters, bosses and challenges.&#xA;Be ready to play an extraordinarily difficult bullet-dodging game!&#xA;&#xA;(NOTE: Touhou is NOT an anime... but it is a Japanese game with anime-looking drawings '.＿.)&#xA;There are multiple fan-made anime series if you're into that, but the games are just games.)" Margin="0,0,0,0"/>
 					</Grid>
 				</Expander>
 				<Expander HorizontalAlignment="Stretch" Header="What is this Touhou Button?" Margin="10,5,10,5" Grid.Row="3" Template="{DynamicResource ExpanderTemplate1}" FontFamily="UD Digi Kyokasho NK-R" Expanded="Expander_Expanded" Initialized="Expander_Initialized">
@@ -338,26 +337,32 @@
 						<ColumnDefinition Width="20"/>
 						<ColumnDefinition/>
 					</Grid.ColumnDefinitions>
-					<Label x:Name="CurrentUserName" Content="(Guest)" VerticalAlignment="Stretch" Background="Silver" BorderBrush="Black" BorderThickness="1,1,1,0" Padding="5,1,5,2" Grid.Column="1" Width="80"/>
+					<Label x:Name="CurrentUserName" Content="(Guest)" VerticalAlignment="Stretch" Background="Silver" BorderBrush="Black" BorderThickness="1,1,1,0" Padding="5,3,5,0" Grid.Column="1" Width="80"/>
 					<Label Content="👤" Background="White" BorderBrush="Black" BorderThickness="1,1,0,0" FontFamily="UD Digi Kyokasho NK-R" Padding="1,2,0,0" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
 				</Grid>
 
 				<Button x:Name="Play" Content="Play Touhou 6: The Embodiment of Scarlet Devil" HorizontalAlignment="Stretch" Margin="50,0,50,32" Grid.Row="5" Height="50" VerticalAlignment="Bottom" Click="Play_Click" FontFamily="UD Digi Kyokasho NK-B" FontSize="18" Background="Cornsilk" BorderThickness="2,2,2,2" BorderBrush="Black"/>
-				<CheckBox x:Name="Fullscreen" Content="Fullscreen&#xD;&#xA;" HorizontalAlignment="Right" Margin="0,0,50,82" Grid.Row="5" VerticalAlignment="Bottom" Foreground="White" FontFamily="UD Digi Kyokasho NK-B" VerticalContentAlignment="Top" Padding="4,1,0,0" IsChecked="True"/>
+				<CheckBox x:Name="Fullscreen" Content="Fullscreen&#xA;" HorizontalAlignment="Right" Margin="0,0,50,82" Grid.Row="5" VerticalAlignment="Bottom" Foreground="White" FontFamily="UD Digi Kyokasho NK-B" VerticalContentAlignment="Top" Padding="4,1,0,0" IsChecked="True" UseLayoutRounding="True" BorderThickness="1,1,1,1" BorderBrush="Black" Height="20"/>
 			</Grid>
-			<ScrollViewer x:Name="SocialBar" Margin="5,5,5,5">
+			<ScrollViewer x:Name="SocialBar" Padding="5,5,5,5" VerticalScrollBarVisibility="Auto">
+				<ScrollViewer.Background>
+					<LinearGradientBrush EndPoint="0.5,0" StartPoint="0.5,1">
+						<GradientStop Color="#FF500567"/>
+						<GradientStop Color="#FF2D0137" Offset="1"/>
+					</LinearGradientBrush>
+				</ScrollViewer.Background>
 				<Grid>
 					<Grid.RowDefinitions>
 						<RowDefinition Height="Auto"/>
 						<RowDefinition/>
 					</Grid.RowDefinitions>
-					<Grid>
+					<Grid x:Name="AccountButtonsGrid" Margin="0,0,0,5">
 						<Grid.ColumnDefinitions>
 							<ColumnDefinition/>
 							<ColumnDefinition/>
 						</Grid.ColumnDefinitions>
-						<Button x:Name="LogInButton" Content="↩ Log In" Click="LogInButton_Click" Background="#FFFFF0B6" FontFamily="UD Digi Kyokasho NK-B" Padding="1,7,1,5"/>
-						<Button x:Name="RegisterButton" Content="✏️ Register" Background="#FFFFF0B6" FontFamily="UD Digi Kyokasho NK-B" Padding="1,7,1,5" Grid.Column="1" Click="RegisterButton_Click"/>
+						<Button x:Name="LogInButton" Content="↩ Log In" Click="LogInButton_Click" Background="#FFFFF0B6" FontFamily="UD Digi Kyokasho NK-B" Padding="1,7,1,5" BorderBrush="Black"/>
+						<Button x:Name="RegisterButton" Content="✏️ Register" Background="#FFFFF0B6" FontFamily="UD Digi Kyokasho NK-B" Padding="1,7,1,5" Grid.Column="1" Click="RegisterButton_Click" BorderBrush="Black"/>
 					</Grid>
 					<StackPanel x:Name="SocialStack" Focusable="True" Grid.Row="1">
 						<StackPanel.Resources>
@@ -365,18 +370,13 @@
 								<Setter Property="Margin" Value="0,5,5,0"/>
 							</Style>
 						</StackPanel.Resources>
-						<StackPanel.Background>
-							<LinearGradientBrush EndPoint="0.5,0" StartPoint="0.5,1">
-								<GradientStop Color="#FF391259" Offset="1"/>
-								<GradientStop Color="#FF5B0475" Offset="0"/>
-							</LinearGradientBrush>
-						</StackPanel.Background>
 					</StackPanel>
 				</Grid>
 			</ScrollViewer>
+			<Rectangle HorizontalAlignment="Left" Width="2" Grid.Column="1" Stroke="Black"/>
 			<Label x:Name="SocialBarLoading" Content="Loading Social Bar..." Background="#BF000000" Foreground="White" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" FontSize="16" MouseEnter="SocialBarLoading_MouseEnter">
 				<Label.Style>
-					<Style TargetType="Label">
+					<Style TargetType="{x:Type Label}">
 						<Style.Triggers>
 							<Trigger Property="IsEnabled" Value="False">
 								<Trigger.EnterActions>
@@ -413,10 +413,12 @@
 				</Label.Style>
 			</Label>
 		</Grid>
-		<Rectangle x:Name="TitleBar" Fill="#FF3B1551" PreviewMouseLeftButtonDown="TitleBar_PreviewMouseLeftButtonDown" Stroke="Black" Margin="-2,-2,-2,0" StrokeThickness="2"/>
-		<Label Content="The Touhou Button Launcher" Foreground="White" FontFamily="UD Digi Kyokasho NK-R" Background="{x:Null}" IsHitTestVisible="False" Margin="25,0,0,0"/>
-		<Button x:Name="Close" Content="✕" HorizontalAlignment="Right" FontFamily="Source Code Pro" BorderBrush="{x:Null}" Background="#FF9B2700" Foreground="White" Width="23" Click="Close_Click" BorderThickness="0,0,0,0" Margin="0,0,0,2"/>
-		<Image HorizontalAlignment="Left" Height="25" VerticalAlignment="Stretch" Width="25" Source="/icon.png" Margin="0,0,0,2" IsHitTestVisible="False"/>
+		<Rectangle x:Name="TitleBar" Fill="#FF3B1551" PreviewMouseLeftButtonDown="TitleBar_PreviewMouseLeftButtonDown" Stroke="Black" StrokeThickness="2"/>
+		<Label Content="The Touhou Button Launcher" Foreground="White" FontFamily="UD Digi Kyokasho NK-R" Background="{x:Null}" IsHitTestVisible="False" Margin="25,0,0,0" BorderBrush="Black" BorderThickness="2,0,0,0" Padding="7,7,0,0" VerticalContentAlignment="Stretch"/>
+		<Button x:Name="Close" Content="✕" HorizontalAlignment="Right" FontFamily="Source Code Pro" BorderBrush="Black" Background="#FF9B2700" Foreground="White" Width="25" Click="Close_Click" BorderThickness="2,0,0,0" Margin="0,0,0,2" Padding="1,1,3,1"/>
+		<Image x:Name="TitleBarIcon" HorizontalAlignment="Left" Height="25" VerticalAlignment="Stretch" Width="25" Source="/icon.png" Margin="0,0,0,2" IsHitTestVisible="False"/>
+		<Border BorderBrush="Black" BorderThickness="2,2,2,2" Grid.RowSpan="2" d:IsLocked="True"/>
+
 	</Grid>
 
 </Window>

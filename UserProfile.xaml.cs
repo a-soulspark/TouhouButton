@@ -1,20 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Media;
-using System.Text;
-using System.Threading.Tasks;
-using System.Timers;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace TouhouButtonWPF
 {
@@ -23,7 +12,10 @@ namespace TouhouButtonWPF
 	/// </summary>
 	public partial class UserProfile : UserControl
 	{
-		private const string NOTEPAD_PLACEHOLDER = "This is your personal notepad. Feel free to write whatever you want in it...";
+		public const string NOTEPAD_PLACEHOLDER = "This is your personal notepad. Feel free to write whatever you want in it...";
+		public const string NOTEPAD_PLACEHOLDER_OTHERS = "(This user hasn't written anything in their notepad yet...)";
+		
+		private readonly TouhouLauncher launcher;
 
 		public User User { get; }
 		public Action<string> OnShowLogIn { get; }
@@ -32,7 +24,7 @@ namespace TouhouButtonWPF
 		// public UserProfile(string userName) : this(userName, name => { }) { }
 		// ^^^ not really very needed
 
-		public UserProfile(User user, Action<string> onShowLogIn)
+		public UserProfile(TouhouLauncher launcher, User user, Action<string> onShowLogIn)
 		{
 			InitializeComponent();
 			User = user;
@@ -40,6 +32,8 @@ namespace TouhouButtonWPF
 			Notepad.Document.Blocks.Clear();
 			Notepad.Document.Blocks.Add(new Paragraph(new Run(NOTEPAD_PLACEHOLDER)));
 			OnShowLogIn = onShowLogIn;
+		
+			this.launcher = launcher;
 		}
 
 		private void RichTextBox_GotFocus(object sender, RoutedEventArgs e)
@@ -61,26 +55,40 @@ namespace TouhouButtonWPF
 			}
 		}
 
+		// Called when this profile's User has just signed in
 		internal void LogIn()
 		{
 			LoggedIn = true;
 
-			LogInPrompt.IsEnabled = false;
-			LogInPrompt.Visibility = Visibility.Hidden;
+			var text = new TextRange(Notepad.Document.ContentStart, Notepad.Document.ContentEnd).Text;
+			if (text.Contains(NOTEPAD_PLACEHOLDER_OTHERS))
+			{
+				Notepad.Document.Blocks.Clear();
+				Notepad.Document.Blocks.Add(new Paragraph(new Run(NOTEPAD_PLACEHOLDER)));
+			}
+
 			Notepad.IsReadOnly = false;
 			Notepad.IsHitTestVisible = Notepad.Focusable = true;
+			BorderBrush = new SolidColorBrush(Colors.LightPink);
 		}
 
-		private void LogInPrompt_MouseUp(object sender, MouseButtonEventArgs e) => OnShowLogIn(User.Name);
+		// Called when any user has logged in
+		internal void OnLoggedIn()
+		{
+			LogInPrompt.IsEnabled = false;
+			LogInPrompt.Visibility = Visibility.Hidden;
+		}
+
+		private void LogInPrompt_MouseDown(object sender, MouseButtonEventArgs e) => OnShowLogIn(User.Name);
 
 		private void UserControl_MouseEnter(object sender, MouseEventArgs e)
 		{
-			if (!LoggedIn) LogInPrompt.IsEnabled = true;
+			if (launcher.currentUser == null) LogInPrompt.IsEnabled = true;
 		}
 
 		private void UserControl_MouseLeave(object sender, MouseEventArgs e)
 		{
-			if (!LoggedIn) LogInPrompt.IsEnabled = false;
+			if (launcher.currentUser == null) LogInPrompt.IsEnabled = false;
 		}
 	}
 }

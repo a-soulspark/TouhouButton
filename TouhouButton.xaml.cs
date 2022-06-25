@@ -28,11 +28,49 @@ namespace TouhouButtonWPF
 
 		private bool locked = true;
 		private bool shouldClose = false;
-		private string soundPath = "start.wav";
+		public const string START_SOUND_PATH = "./resources/start.wav";
 
-		public TouhouButton()
+		public TouhouButton() => InitializeComponent();
+
+		// SourceInitialized is the right moment to read configuration files (or so it seems)
+		private void Window_SourceInitialized(object sender, EventArgs e) => ReadJsonConfig();
+
+		// Reads the options specified in the config.json file
+		private void ReadJsonConfig()
 		{
-			InitializeComponent();
+			using var stream = File.Open(Directory.GetCurrentDirectory() + "/config.json", FileMode.Open);
+			try
+			{
+				JsonNode? json = JsonNode.Parse(stream);
+				if (json != null)
+				{
+					Debug.WriteLine($"Configuration loaded: {json}");
+
+					// Load images from resources
+					touhouButton.Source = new BitmapImage(Utils.GetUri("./resources/button.png"));
+					title.Source = new BitmapImage(Utils.GetUri("./resources/title.png"));
+
+					// Load window coordinates back
+					JsonUtils.TryGetNode(json, "window", node =>
+					{
+						var windowJson = node.AsObject();
+						JsonUtils.TryGetValue<double>(windowJson, "top", value => Top = value);
+						JsonUtils.TryGetValue<double>(windowJson, "left", value => Left = value);
+					});
+
+					// Load window background gradient colors
+					GradientBrush brush = (GradientBrush)background.Fill;
+					JsonUtils.TryGetValue<string>(json, "backgroundColors", value =>
+					{
+						brush.GradientStops = GradientStopCollection.Parse(value);
+						background.Fill = brush;
+					});
+				}
+			}
+			catch (Exception ex)
+			{
+				MessageBox.Show($"Failed to load configuration file.\n{ex}");
+			}
 		}
 
 		// supress Alt-F4
@@ -43,72 +81,97 @@ namespace TouhouButtonWPF
 				e.Cancel = true;
 				return;
 			}
+		}
 
-			using (FileStream stream = File.Open(Directory.GetCurrentDirectory() + "/config.json", FileMode.Open))
+		// Updates the config.json file with the new window coordinates
+		private void SaveJsonConfig()
+		{
+			FileStream stream = File.Open(Directory.GetCurrentDirectory() + "/config.json", FileMode.Open);
+			try
 			{
-				try
+				JsonNode? json = JsonNode.Parse(stream);
+				if (json != null)
 				{
-					JsonNode? json = JsonNode.Parse(stream);
-					if (json != null)
+					stream.Position = 0;
+					Utf8JsonWriter writer = new(stream, new JsonWriterOptions() { Indented = true });
+					var jsonObject = json.AsObject();
+
+					jsonObject.Add("window", new JsonObject
 					{
-						stream.Position = 0;
-						Utf8JsonWriter writer = new(stream, new JsonWriterOptions() { Indented = true });
-						var jsonObject = json.AsObject();
+						new("top", JsonValue.Create(Top)),
+						new("left", JsonValue.Create(Left))
+					});
 
-						var windowJson = new JsonObject();
-						windowJson.Add(new("top", JsonValue.Create(Top)));
-						windowJson.Add(new("left", JsonValue.Create(Left)));
-						jsonObject.Add("window", windowJson);
-
-						jsonObject.WriteTo(writer);
-						writer.Flush();
-					}
+					jsonObject.WriteTo(writer);
+					writer.Flush();
 				}
-				catch (Exception ex)
-				{
-					MessageBox.Show($"Failed to load configuration file.\n{ex}");
-				}
+			}
+			catch (Exception ex)
+			{
+				MessageBox.Show($"Failed to write to configuration file.\n{ex}");
 			}
 		}
 
+		// Button animations
 		private void Window_MouseEnter(object sender, MouseEventArgs e) => ShiftTouhouButton(-1);
 		private void Window_MouseLeave(object sender, MouseEventArgs e) => ShiftTouhouButton(1);
 
+		// Window Draggable
 		private void Window_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
 		{
+			// If the button is locked, play Button animations
+			// Otherwise, drag window around and save its position afterwards
 			if (locked)
 			{
 				ShiftTouhouButton(-1);
 				CaptureMouse();
 			}
-			else DragMove();
+			else
+			{
+				DragMove();
+				SaveJsonConfig();
+			}
 		}
 
 		private void Window_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
 		{
+			// If the button is locked, open the Launcher
 			if (locked)
 			{
 				ShiftTouhouButton(1);
 				ReleaseMouseCapture();
-				if (!IsMouseOver) return;
-
-					using (var stream = File.Open(soundPath, FileMode.Open))
-				{
-					var soundPlayer = new SoundPlayer(stream);
-					soundPlayer.Play();
-				}
-
-				Opacity = 0;
-				TouhouLauncher touhouLauncher = new TouhouLauncher(process =>
-				{
-					process.WaitForExit();
-					Opacity = 1;
-				}, () => Opacity = 1);
-
-				touhouLauncher.Show();
+				// Since the mouse was captured when this event is triggered,
+				// it must ensure that the mouse is actually above the TouhouButton
+				if (IsMouseOver) OpenLauncher();
 			}
 		}
 
+		// Opens the TouhouLauncher (wow)
+		private void OpenLauncher()
+		{
+			using (var stream = File.Open(START_SOUND_PATH, FileMode.Open))
+			{
+				var soundPlayer = new SoundPlayer(stream);
+				soundPlayer.Play();
+			}
+
+			/* Hides the TouhouButton, and stays hidden until
+			 1. The TouhouLauncher opens up an instance of the game, and then waits until that instance then gets closed.
+			 2. The TouhouLauncher is dismissed
+			 --------------------------------------------
+			 * TODO: Make this not so bad
+			 * (I already added a TODO related to this one, about the Launcher hiding itself when the game opens instead of closing)
+			 */
+			Opacity = 0;
+			new TouhouLauncher(process =>
+			{
+				process.WaitForExit();
+				Opacity = 1;
+			}, () => Opacity = 1).Show();
+		}
+
+		// Shifts the Touhou Button's image by 3*factor px.
+		// Helps give more feedback to the user's actions.
 		private void ShiftTouhouButton(int factor)
 		{
 			var margin = touhouButton.Margin;
@@ -116,61 +179,32 @@ namespace TouhouButtonWPF
 			touhouButton.Margin = margin;
 		}
 
+		// Window shortcuts
 		private void Window_KeyDown(object sender, KeyEventArgs e)
 		{
+			// CTRL + SHIFT + L --> Toggling window locked/unlocked
 			if (e.Key == Key.L && Keyboard.Modifiers.HasFlag(ModifierKeys.Shift) && Keyboard.Modifiers.HasFlag(ModifierKeys.Control))
 			{
 				locked = !locked;
 				MessageBox.Show(locked ? "Locked Touhou Button!" : "Unlocked Touhou Button!");
 			}
 
+			// CTRL + SHIFT + Q --> Force-Quitting (Alt-F4 doesn't work >:)
 			if (e.Key == Key.Q && Keyboard.Modifiers.HasFlag(ModifierKeys.Shift) && Keyboard.Modifiers.HasFlag(ModifierKeys.Control))
 			{
 				shouldClose = true;
 				Close();
 			}
+
+			// CTRL + SHIFT + Q --> Reveal Database folder in the File Explorer
+			if (e.Key == Key.D && Keyboard.Modifiers.HasFlag(ModifierKeys.Shift) && Keyboard.Modifiers.HasFlag(ModifierKeys.Control))
+				Process.Start("explorer.exe", @$"{Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)}\TouhouButton\database");
 		}
 
-		private void Window_SourceInitialized(object sender, EventArgs e)
-		{
-			using (FileStream stream = File.Open(Directory.GetCurrentDirectory() + "/config.json", FileMode.Open))
-			{
-				try
-				{
-					JsonNode? json = JsonNode.Parse(stream);
-					if (json != null)
-					{
-						Debug.WriteLine($"Configuration loaded: {json}");
-
-						// Store information
-						JsonUtils.TryGetUri(json, "buttonPath", uri => touhouButton.Source = new BitmapImage(uri));
-						JsonUtils.TryGetUri(json, "titlePath", uri => title.Source = new BitmapImage(uri));
-						JsonUtils.TryGetValue<string>(json, "soundPath", value => soundPath = value);
-						
-						JsonUtils.TryGetNode(json, "window", node =>
-						{
-							var windowJson = node.AsObject();
-							JsonUtils.TryGetValue<double>(windowJson, "top", value => Top = value);
-							JsonUtils.TryGetValue<double>(windowJson, "left", value => Left = value);
-						});
-
-						GradientBrush brush = (GradientBrush)background.Fill;
-						JsonUtils.TryGetValue<string>(json, "backgroundColors", value =>
-						{
-							brush.GradientStops = GradientStopCollection.Parse(value);
-							background.Fill = brush;
-						});
-					}
-				}
-				catch (Exception ex)
-				{
-					MessageBox.Show($"Failed to load configuration file.\n{ex}");
-				}
-			}
-		}
-
+		// When the window is loaded, make sure it behaves as intended (similar to a Windows Gadget)
 		private void Window_Loaded(object sender, RoutedEventArgs e)
 		{
+			// Hide from the Alt-Tab menu
 			var handle = new WindowInteropHelper(this).Handle;
 			SetWindowLong(handle, GWL_EX_STYLE, (GetWindowLong(handle, GWL_EX_STYLE) | WS_EX_TOOLWINDOW) & ~WS_EX_APPWINDOW);
 
@@ -179,6 +213,11 @@ namespace TouhouButtonWPF
 		}
 	}
 
+	/* This class ensures that the window will always be visible, even when using the Win+D action.
+	 * It does not work 100% of the times, due to how stupidly inconsistent Win+D is, but hey...
+	 * That's on Microsoft, not me.
+
+	 * Don't even attempt to understand this code, for your own sake.*/
 	public static class ShowDesktop
 	{
 		[DllImport("user32.dll")]
@@ -202,17 +241,6 @@ namespace TouhouButtonWPF
 			_window = window;
 		}
 
-		/*public static void RemoveHook()
-		{
-			if (_hookIntPtr == null) return;
-
-			UnhookWinEvent(_hookIntPtr.Value);
-
-			_delegate = null;
-			_hookIntPtr = null;
-			_window = null;
-		}*/
-
 		private static string GetWindowClass(IntPtr hwnd)
 		{
 			StringBuilder _sb = new StringBuilder(32);
@@ -226,10 +254,7 @@ namespace TouhouButtonWPF
 		{
 			string _class = GetWindowClass(hwnd);
 
-			Action action = () =>
-			{
-				_window.Topmost = (string.Equals(_class, "WorkerW", StringComparison.Ordinal) || string.Equals(_class, "ProgMan", StringComparison.Ordinal));
-			};
+			Action action = () => _window.Topmost = (string.Equals(_class, "WorkerW", StringComparison.Ordinal) || string.Equals(_class, "ProgMan", StringComparison.Ordinal));
 			_window.Dispatcher.BeginInvoke(action);
 		}
 

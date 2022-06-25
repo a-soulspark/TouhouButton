@@ -1,6 +1,3 @@
 {
-  "buttonPath": "./resources/touhou_6_button.png",
-  "titlePath": "./resources/touhou_6_title.png",
-  "soundPath": "./resources/start.wav",
   "backgroundColors": "#FF22000D, 0, #FF903737, 1"
 }
